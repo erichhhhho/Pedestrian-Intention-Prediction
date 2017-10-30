@@ -109,7 +109,7 @@ def main():
 
     # Check experiment tags
     if not (args.noedges or args.temporal or args.temporal_spatial or args.attention):
-        print 'Use one of the experiment tags to enforce model'
+        print ('Use one of the experiment tags to enforce model')
         return
 
     # Save directory
@@ -117,19 +117,19 @@ def main():
     save_directory += str(args.test_dataset) + '/'
     plot_directory = 'plot/'
     if args.noedges:
-        print 'No edge RNNs used'
+        print ('No edge RNNs used')
         save_directory += 'save_noedges'
         plot_directory += 'plot_noedges'
     elif args.temporal:
-        print 'Only temporal edge RNNs used'
+        print ('Only temporal edge RNNs used')
         save_directory += 'save_temporal'
         plot_directory += 'plot_temporal'
     elif args.temporal_spatial:
-        print 'Both temporal and spatial edge RNNs used'
+        print ('Both temporal and spatial edge RNNs used')
         save_directory += 'save_temporal_spatial'
         plot_directory += 'plot_temporal_spatial'
     else:
-        print 'Both temporal and spatial edge RNNs used with attention'
+        print ('Both temporal and spatial edge RNNs used with attention')
         save_directory += 'save_attention'
         plot_directory += 'plot_attention'
 
@@ -141,7 +141,7 @@ def main():
     withBackground = 0
 
     for i in range(len(results)):
-        print i
+        print(i)
         name = 'sequence' + str(i)
         plot_trajectories(results[i][0], results[i][1], results[i][2], results[i][3], name, plot_directory, withBackground)
 
