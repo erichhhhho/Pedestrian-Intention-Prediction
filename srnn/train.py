@@ -80,7 +80,7 @@ def main():
                         help='Dropout probability')
 
     # The leave out dataset
-    parser.add_argument('--leaveDataset', type=int, default=3,
+    parser.add_argument('--leaveDataset', type=int, default=0,
                         help='The dataset index to be left out in training')
 
     args = parser.parse_args()
@@ -102,7 +102,7 @@ def train(args):
     stgraph = ST_GRAPH(1, args.seq_length + 1)
 
     # Log directory
-    log_directory = 'log/'
+    log_directory = '/home/hesl/PycharmProjects/srnn-pytorch/log/'
     log_directory += str(args.leaveDataset)+'/'
     log_directory += 'log_attention'
 
@@ -111,7 +111,7 @@ def train(args):
     log_file = open(os.path.join(log_directory, 'val.txt'), 'w')
 
     # Save directory
-    save_directory = 'save/'
+    save_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/'
     save_directory += str(args.leaveDataset)+'/'
     save_directory += 'save_attention'
 

@@ -24,9 +24,9 @@ class DataLoader():
         forcePreProcess : Flag to forcefully preprocess the data again from csv files
         '''
         # List of data directories where raw data resides
-        self.data_dirs = ['./data/eth/univ', './data/eth/hotel',
-                          './data/ucy/zara/zara01', './data/ucy/zara/zara02',
-                          './data/ucy/univ']
+        self.data_dirs = ['/home/hesl/PycharmProjects/srnn-pytorch/data/eth/univ', '/home/hesl/PycharmProjects/srnn-pytorch/data/eth/hotel',
+                          '/home/hesl/PycharmProjects/srnn-pytorch/data/ucy/zara/zara01', '/home/hesl/PycharmProjects/srnn-pytorch/data/ucy/zara/zara02',
+                          '/home/hesl/PycharmProjects/srnn-pytorch/data/ucy/univ']
         self.used_data_dirs = [self.data_dirs[x] for x in datasets]
         self.test_data_dirs = [self.data_dirs[x] for x in range(5) if x not in datasets]
         self.infer = infer
@@ -35,7 +35,7 @@ class DataLoader():
         self.numDatasets = len(self.data_dirs)
 
         # Data directory where the pre-processed pickle file resides
-        self.data_dir = './data'
+        self.data_dir = '/home/hesl/PycharmProjects/srnn-pytorch/data'
 
         # Store the arguments
         self.batch_size = batch_size
