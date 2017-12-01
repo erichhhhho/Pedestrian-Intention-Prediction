@@ -23,6 +23,13 @@ from helper import getCoef, sample_gaussian_2d, compute_edges, get_mean_error, g
 from criterion import Gaussian2DLikelihood, Gaussian2DLikelihoodInference
 
 
+H_path=['/media/hesl/OS/Documents and Settings/N1701420F/Desktop/pedestrians/ewap_dataset/seq_eth/H.txt',
+        '/media/hesl/OS/Documents and Settings/N1701420F/Desktop/pedestrians/ewap_dataset/seq_hotel/H.txt',
+        '/media/hesl/OS/Documents and Settings/N1701420F/Desktop/pedestrians/ucy_crowd/data_zara01/H.txt',
+        '/media/hesl/OS/Documents and Settings/N1701420F/Desktop/pedestrians/ucy_crowd/data_zara02/H.txt',
+        '/media/hesl/OS/Documents and Settings/N1701420F/Desktop/pedestrians/ucy_crowd/data_students03/H.txt']
+
+
 def main():
 
     parser = argparse.ArgumentParser()
@@ -33,18 +40,18 @@ def main():
     parser.add_argument('--pred_length', type=int, default=12,
                         help='Predicted length of the trajectory')
     # Test dataset
-    parser.add_argument('--test_dataset', type=int, default=3,
+    parser.add_argument('--test_dataset', type=int, default=4,
                         help='Dataset to be tested on')
 
     # Model to be loaded
-    parser.add_argument('--epoch', type=int, default=49,
+    parser.add_argument('--epoch', type=int, default=149,
                         help='Epoch of model to be loaded')
 
     # Parse the parameters
     sample_args = parser.parse_args()
 
     # Save directory
-    save_directory = 'save/'
+    save_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/FixedPixel_150epochs/'
     save_directory += str(sample_args.test_dataset)+'/'
     save_directory += 'save_attention'
 
@@ -65,6 +72,9 @@ def main():
         model_epoch = checkpoint['epoch']
         net.load_state_dict(checkpoint['state_dict'])
         print('Loaded checkpoint at {}'.format(model_epoch))
+
+    # homography
+    H = np.loadtxt(H_path[sample_args.test_dataset])
 
     # Dataset to get data from
     dataset = [sample_args.test_dataset]
@@ -104,8 +114,8 @@ def main():
         ret_nodes, ret_attn = sample(obs_nodes, obs_edges, obs_nodesPresent, obs_edgesPresent, sample_args, net, nodes, edges, nodesPresent)
 
         # Compute mean and final displacement error
-        total_error += get_mean_error(ret_nodes[sample_args.obs_length:].data, nodes[sample_args.obs_length:].data, nodesPresent[sample_args.obs_length-1], nodesPresent[sample_args.obs_length:])
-        final_error += get_final_error(ret_nodes[sample_args.obs_length:].data, nodes[sample_args.obs_length:].data, nodesPresent[sample_args.obs_length-1], nodesPresent[sample_args.obs_length:])
+        total_error += get_mean_error(ret_nodes[sample_args.obs_length:].data, nodes[sample_args.obs_length:].data, nodesPresent[sample_args.obs_length-1], nodesPresent[sample_args.obs_length:],H,sample_args.test_dataset)
+        final_error += get_final_error(ret_nodes[sample_args.obs_length:].data, nodes[sample_args.obs_length:].data, nodesPresent[sample_args.obs_length-1], nodesPresent[sample_args.obs_length:],H,sample_args.test_dataset)
 
         end = time.time()
 

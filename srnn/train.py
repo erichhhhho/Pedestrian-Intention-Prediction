@@ -21,71 +21,73 @@ from criterion import Gaussian2DLikelihood
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    for index in range(2):
+        print('exluding dataset {} now'.format(index+3))
+        parser = argparse.ArgumentParser()
 
-    # RNN size
-    parser.add_argument('--human_node_rnn_size', type=int, default=128,
-                        help='Size of Human Node RNN hidden state')
-    parser.add_argument('--human_human_edge_rnn_size', type=int, default=256,
-                        help='Size of Human Human Edge RNN hidden state')
+        # RNN size
+        parser.add_argument('--human_node_rnn_size', type=int, default=128,
+                            help='Size of Human Node RNN hidden state')
+        parser.add_argument('--human_human_edge_rnn_size', type=int, default=256,
+                            help='Size of Human Human Edge RNN hidden state')
 
-    # Input and output size
-    parser.add_argument('--human_node_input_size', type=int, default=2,
-                        help='Dimension of the node features')
-    parser.add_argument('--human_human_edge_input_size', type=int, default=2,
-                        help='Dimension of the edge features')
-    parser.add_argument('--human_node_output_size', type=int, default=5,
-                        help='Dimension of the node output')
+        # Input and output size
+        parser.add_argument('--human_node_input_size', type=int, default=2,
+                            help='Dimension of the node features')
+        parser.add_argument('--human_human_edge_input_size', type=int, default=2,
+                            help='Dimension of the edge features')
+        parser.add_argument('--human_node_output_size', type=int, default=5,
+                            help='Dimension of the node output')
 
-    # Embedding size
-    parser.add_argument('--human_node_embedding_size', type=int, default=64,
-                        help='Embedding size of node features')
-    parser.add_argument('--human_human_edge_embedding_size', type=int, default=64,
-                        help='Embedding size of edge features')
+        # Embedding size
+        parser.add_argument('--human_node_embedding_size', type=int, default=64,
+                            help='Embedding size of node features')
+        parser.add_argument('--human_human_edge_embedding_size', type=int, default=64,
+                            help='Embedding size of edge features')
 
-    # Attention vector dimension
-    parser.add_argument('--attention_size', type=int, default=64,
-                        help='Attention size')
+        # Attention vector dimension
+        parser.add_argument('--attention_size', type=int, default=64,
+                            help='Attention size')
 
-    # Sequence length
-    parser.add_argument('--seq_length', type=int, default=20,
-                        help='Sequence length')
-    parser.add_argument('--pred_length', type=int, default=12,
-                        help='Predicted sequence length')
+        # Sequence length
+        parser.add_argument('--seq_length', type=int, default=20,
+                            help='Sequence length')
+        parser.add_argument('--pred_length', type=int, default=12,
+                            help='Predicted sequence length')
 
-    # Batch size
-    parser.add_argument('--batch_size', type=int, default=8,
-                        help='Batch size')
+        # Batch size
+        parser.add_argument('--batch_size', type=int, default=8,
+                            help='Batch size')
 
-    # Number of epochs
-    parser.add_argument('--num_epochs', type=int, default=200,
-                        help='number of epochs')
+        # Number of epochs
+        parser.add_argument('--num_epochs', type=int, default=300,
+                            help='number of epochs')
 
-    # Gradient value at which it should be clipped
-    parser.add_argument('--grad_clip', type=float, default=10.,
-                        help='clip gradients at this value')
-    # Lambda regularization parameter (L2)
-    parser.add_argument('--lambda_param', type=float, default=0.00005,
-                        help='L2 regularization parameter')
+        # Gradient value at which it should be clipped
+        parser.add_argument('--grad_clip', type=float, default=10.,
+                            help='clip gradients at this value')
+        # Lambda regularization parameter (L2)
+        parser.add_argument('--lambda_param', type=float, default=0.00005,
+                            help='L2 regularization parameter')
 
-    # Learning rate parameter
-    parser.add_argument('--learning_rate', type=float, default=0.001,
-                        help='learning rate')
-    # Decay rate for the learning rate parameter
-    parser.add_argument('--decay_rate', type=float, default=0.99,
-                        help='decay rate for the optimizer')
+        # Learning rate parameter
+        parser.add_argument('--learning_rate', type=float, default=0.001,
+                            help='learning rate')
+        # Decay rate for the learning rate parameter
+        parser.add_argument('--decay_rate', type=float, default=0.99,
+                            help='decay rate for the optimizer')
 
-    # Dropout rate
-    parser.add_argument('--dropout', type=float, default=0,
-                        help='Dropout probability')
+        # Dropout rate
+        parser.add_argument('--dropout', type=float, default=0,
+                            help='Dropout probability')
 
-    # The leave out dataset
-    parser.add_argument('--leaveDataset', type=int, default=0,
-                        help='The dataset index to be left out in training')
+        # The leave out dataset
+        parser.add_argument('--leaveDataset', type=int, default=index+3,
+                            help='The dataset index to be left out in training')
 
-    args = parser.parse_args()
+        args = parser.parse_args()
 
-    train(args)
+        train(args)
 
 
 def train(args):
@@ -102,7 +104,7 @@ def train(args):
     stgraph = ST_GRAPH(1, args.seq_length + 1)
 
     # Log directory
-    log_directory = '/home/hesl/PycharmProjects/srnn-pytorch/log/'
+    log_directory = '/home/hesl/PycharmProjects/srnn-pytorch/log/FixedPixel_300epochs/'
     log_directory += str(args.leaveDataset)+'/'
     log_directory += 'log_attention'
 
@@ -111,7 +113,7 @@ def train(args):
     log_file = open(os.path.join(log_directory, 'val.txt'), 'w')
 
     # Save directory
-    save_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/'
+    save_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/FixedPixel_300epochs/'
     save_directory += str(args.leaveDataset)+'/'
     save_directory += 'save_attention'
 
