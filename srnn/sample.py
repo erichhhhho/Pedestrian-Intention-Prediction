@@ -44,14 +44,14 @@ def main():
                         help='Dataset to be tested on')
 
     # Model to be loaded
-    parser.add_argument('--epoch', type=int, default=149,
+    parser.add_argument('--epoch', type=int, default=105,
                         help='Epoch of model to be loaded')
 
     # Parse the parameters
     sample_args = parser.parse_args()
 
     # Save directory
-    save_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/FixedPixel_150epochs/'
+    save_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/FixedPixel_300epochs/'
     save_directory += str(sample_args.test_dataset)+'/'
     save_directory += 'save_attention'
 

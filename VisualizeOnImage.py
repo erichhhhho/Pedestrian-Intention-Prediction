@@ -20,11 +20,11 @@ parser.add_argument('--obs_length', type=int, default=8,
 parser.add_argument('--pred_length', type=int, default=12,
                     help='Predicted length of the trajectory')
 # Test dataset
-parser.add_argument('--visual_dataset', type=int, default=2,
+parser.add_argument('--visual_dataset', type=int, default=3,
                     help='Dataset to be tested on')
 
 # Model to be loaded
-parser.add_argument('--epoch', type=int, default=56,
+parser.add_argument('--epoch', type=int, default=80,
                     help='Epoch of model to be loaded')
 
 # Parse the parameters
@@ -33,7 +33,7 @@ sample_args = parser.parse_args()
 '''KITTI Training Setting'''
 
 #save_directory = '/home/hesl/PycharmProjects/social-lstm-tf-HW/ResultofTrainingKITTI-13NTestonKITTI-17/save'
-save_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/FixedPixel_150epochs/'+str(sample_args.visual_dataset)+'/'
+save_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/'+str(sample_args.visual_dataset)+'/'
 save_directory += 'save_attention'
 
 #save_directory ='/home/hesl/PycharmProjects/social-lstm-tf-HW/ResultofTrainingETH1TestETH0/save/'
@@ -41,7 +41,7 @@ save_directory += 'save_attention'
 with open(os.path.join(save_directory, 'config.pkl'), 'rb') as f:
     saved_args = pickle.load(f)
 
-f = open('/home/hesl/PycharmProjects/srnn-pytorch/save/FixedPixel_150epochs/'+str(sample_args.visual_dataset)+'/save_attention/results.pkl', 'rb')
+f = open('/home/hesl/PycharmProjects/srnn-pytorch/save/'+str(sample_args.visual_dataset)+'/save_attention/results.pkl', 'rb')
 results = pickle.load(f)
 
 dataset = [sample_args.visual_dataset]
@@ -411,7 +411,7 @@ for k in range(int((len(data_loader.frameList[0])/skip_frame)/(sample_args.obs_l
 
             #
             # if results[k][1][j][i][0] != 0 and results[k][0][j][i][0]!=0 and results[k][0][j][i][0]==results[k][1][j][i][0]:
-            #     cv2.line(avatar, (u, v), (up, vp), (255,0,0),1)
+            #     cv2.line(avatar, (u, vpixel_coordinate_inter_normalized.csv), (up, vp), (255,0,0),1)
 
         gt_trajectory.append(current_frame_gt)
         pred_trajectory.append(current_frame_pred)
@@ -434,7 +434,7 @@ for k in range(int((len(data_loader.frameList[0])/skip_frame)/(sample_args.obs_l
                     cv2.drawMarker(avatar, (pred_trajectory[instance][ped][0], pred_trajectory[instance][ped][1]), color=current_color,markerType=cv2.MARKER_TILTED_CROSS, markerSize=5, thickness=1, line_type=cv2.LINE_AA)
 
         #cv2.imshow("avatar", avatar)
-        imagename='/home/hesl/PycharmProjects/srnn-pytorch/plot/FixedPixel_150epochs/'+str(sample_args.visual_dataset)+'/visualize-'+ str(int(k*(10*(sample_args.obs_length+sample_args.pred_length))+j*10+data_loader.frameList[0][0])).zfill(3) +'.jpg'
+        imagename='/home/hesl/PycharmProjects/srnn-pytorch/plot/'+str(sample_args.visual_dataset)+'/visualize-'+ str(int(data_loader.frameList[0][count+j*skip_frame+k*(sample_args.obs_length+sample_args.pred_length)*skip_frame])).zfill(3)  +'.jpg'
         #print(imagename)
 
         cv2.imwrite(imagename, avatar)
