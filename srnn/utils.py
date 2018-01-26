@@ -24,16 +24,23 @@ class DataLoader():
         forcePreProcess : Flag to forcefully preprocess the data again from csv files
         '''
         # List of data directories where raw data resides
-        self.data_dirs = ['/home/hesl/PycharmProjects/srnn-pytorch/data/eth/univ', '/home/hesl/PycharmProjects/srnn-pytorch/data/eth/hotel',
-                          '/home/hesl/PycharmProjects/srnn-pytorch/data/ucy/zara/zara01', '/home/hesl/PycharmProjects/srnn-pytorch/data/ucy/zara/zara02',
-                          '/home/hesl/PycharmProjects/srnn-pytorch/data/ucy/univ']
+        # self.data_dirs = ['/home/n1701420f/DeployedProjects/srnn-pytorch/data/eth/univ', '/home/n1701420f/DeployedProjects/srnn-pytorch/data/eth/hotel',
+        #                   '/home/n1701420f/DeployedProjects/srnn-pytorch/data/ucy/zara/zara01', '/home/n1701420f/DeployedProjects/srnn-pytorch/data/ucy/zara/zara02',
+        #                   '/home/n1701420f/DeployedProjects/srnn-pytorch/data/ucy/univ']
 
 
-        # self.data_dirs = ['/home/hesl/PycharmProjects/srnn-pytorch/data/eth/univ/HEWEI',
-        #                   '/home/hesl/PycharmProjects/srnn-pytorch/data/eth/hotel/HEWEI',
-        #                   '/home/hesl/PycharmProjects/srnn-pytorch/data/ucy/zara/zara01/HEWEI',
-        #                   '/home/hesl/PycharmProjects/srnn-pytorch/data/ucy/zara/zara02/HEWEI',
-        #                   '/home/hesl/PycharmProjects/srnn-pytorch/data/ucy/univ/HEWEI']
+        self.data_dirs = ['/home/hesl/PycharmProjects/srnn-pytorch/data/eth/univ/HEWEI',
+                          '/home/hesl/PycharmProjects/srnn-pytorch/data/eth/hotel/HEWEI',
+                          '/home/hesl/PycharmProjects/srnn-pytorch/data/ucy/zara/zara01/HEWEI',
+                          '/home/hesl/PycharmProjects/srnn-pytorch/data/ucy/zara/zara02/HEWEI',
+                          '/home/hesl/PycharmProjects/srnn-pytorch/data/ucy/univ/HEWEI']
+
+        # self.data_dirs = ['/home/hesl/Desktop/KITTITrackinData/GT/0012',
+        #                   '/home/hesl/Desktop/KITTITrackinData/GT/0013',
+        #                   '/home/hesl/Desktop/KITTITrackinData/GT/0015',
+        #                   '/home/hesl/Desktop/KITTITrackinData/GT/0016',
+        #                   '/home/hesl/Desktop/KITTITrackinData/GT/0017',
+        #                   '/home/hesl/Desktop/KITTITrackinData/GT/0019']
 
         self.used_data_dirs = [self.data_dirs[x] for x in datasets]
         self.test_data_dirs = [self.data_dirs[x] for x in range(5) if x not in datasets]
@@ -96,9 +103,15 @@ class DataLoader():
             # define path of the csv file of the current dataset
             # file_path = os.path.join(directory, 'pixel_pos.csv')
 
-            file_path = os.path.join(directory, 'pixel_pos_interpolate.csv')
+            #file_path = os.path.join(directory, 'pixel_pos_interpolate.csv')
 
             #file_path = os.path.join(directory, 'pixel_coordinate_inter_normalized.csv')
+
+            #file_path = os.path.join(directory, 'world_coordinate_inter_xy.csv')
+
+            #file_path = os.path.join(directory, 'world_coordinate_inter_normalized.csv')
+
+            file_path=os.path.join(directory,'pixel_coordinate_inter_normalized.csv')
 
             # Load the data from the csv file
             data = np.genfromtxt(file_path, delimiter=',')
@@ -199,6 +212,8 @@ class DataLoader():
         # Calculate the number of batches
         self.num_batches = int(counter/self.batch_size)
         self.valid_num_batches = int(valid_counter/self.batch_size)
+
+        print('Counter:{}'.format(counter))
         print('Total number of training batches: {}'.format(self.num_batches * 2))
         print('Total number of validation batches: {}'.format(self.valid_num_batches))
         # On an average, we need twice the number of batches to cover the data

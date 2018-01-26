@@ -19,7 +19,9 @@ import numpy as np
 from utils import DataLoader
 from st_graph import ST_GRAPH
 from model import SRNN
-from helper import getCoef, sample_gaussian_2d, compute_edges, get_mean_error, get_final_error
+#from helper_KITTI import get_final_error,get_mean_error
+from helper import getCoef, sample_gaussian_2d, compute_edges,get_mean_error, get_final_error
+
 from criterion import Gaussian2DLikelihood, Gaussian2DLikelihoodInference
 
 
@@ -28,7 +30,14 @@ H_path=['/media/hesl/OS/Documents and Settings/N1701420F/Desktop/pedestrians/ewa
         '/media/hesl/OS/Documents and Settings/N1701420F/Desktop/pedestrians/ucy_crowd/data_zara01/H.txt',
         '/media/hesl/OS/Documents and Settings/N1701420F/Desktop/pedestrians/ucy_crowd/data_zara02/H.txt',
         '/media/hesl/OS/Documents and Settings/N1701420F/Desktop/pedestrians/ucy_crowd/data_students03/H.txt']
-
+#
+# H_path=['/home/hesl/Desktop/KITTITrackinData/GT/0012/H.txt',
+#         '/home/hesl/Desktop/KITTITrackinData/GT/0013/H.txt',
+#         '/home/hesl/Desktop/KITTITrackinData/GT/0015/H.txt',
+#         '/home/hesl/Desktop/KITTITrackinData/GT/0016/H.txt',
+#         '/home/hesl/Desktop/KITTITrackinData/GT/0017/H.txt',
+#         '/home/hesl/Desktop/KITTITrackinData/GT/0019/H.txt']
+#[146, 148, 132,137,134]
 
 def main():
 
@@ -43,25 +52,35 @@ def main():
     parser.add_argument('--test_dataset', type=int, default=4,
                         help='Dataset to be tested on')
 
-    # Model to be loaded
-    parser.add_argument('--epoch', type=int, default=105,
-                        help='Epoch of model to be loaded')
+    parser.add_argument('--sample_dataset', type=int, default=4,
+                        help='Dataset to be sampled on')
 
+    # Model to be loaded
+    parser.add_argument('--epoch', type=int, default=133,
+                        help='Epoch of model to be loaded')
+#[109,149,124,80,128]
     # Parse the parameters
     sample_args = parser.parse_args()
 
     # Save directory
-    save_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/FixedPixel_300epochs/'
+    save_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/FixedPixel_150epochs_batchsize24_Pruned/'
     save_directory += str(sample_args.test_dataset)+'/'
     save_directory += 'save_attention'
+
+    ouput_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/'
+    #ouput_directory+= str(sample_args.test_dataset) + '/'
+    ouput_directory=save_directory
 
     # Define the path for the config file for saved args
     with open(os.path.join(save_directory, 'config.pkl'), 'rb') as f:
         saved_args = pickle.load(f)
 
+
+
     # Initialize net
     net = SRNN(saved_args, True)
     net.cuda()
+    #net.forward()
 
     checkpoint_path = os.path.join(save_directory, 'srnn_model_'+str(sample_args.epoch)+'.tar')
 
@@ -74,10 +93,11 @@ def main():
         print('Loaded checkpoint at {}'.format(model_epoch))
 
     # homography
-    H = np.loadtxt(H_path[sample_args.test_dataset])
+    H = np.loadtxt(H_path[sample_args.sample_dataset])
 
     # Dataset to get data from
     dataset = [sample_args.test_dataset]
+    dataset = [sample_args.sample_dataset]
 
     dataloader = DataLoader(1, sample_args.pred_length + sample_args.obs_length, dataset, True, infer=True)
 
@@ -86,53 +106,77 @@ def main():
     # Construct the ST-graph object
     stgraph = ST_GRAPH(1, sample_args.pred_length + sample_args.obs_length)
 
-    results = []
+    NumberofSampling=10
 
-    # Variable to maintain total error
-    total_error = 0
-    final_error = 0
+    for i in range(NumberofSampling):
 
-    for batch in range(dataloader.num_batches):
-        start = time.time()
+        results = []
 
-        # Get the next batch
-        x, _, frameIDs, d = dataloader.next_batch(randomUpdate=False)
+        # Variable to maintain total error
+        total_error = 0
+        final_error = 0
 
-        # Construct ST graph
-        stgraph.readGraph(x)
+        for batch in range(dataloader.num_batches):
+            start = time.time()
 
-        nodes, edges, nodesPresent, edgesPresent = stgraph.getSequence()
+            # Get the next batch
+            x, _, frameIDs, d = dataloader.next_batch(randomUpdate=False)
 
-        # Convert to cuda variables
-        nodes = Variable(torch.from_numpy(nodes).float(), volatile=True).cuda()
-        edges = Variable(torch.from_numpy(edges).float(), volatile=True).cuda()
+            # Construct ST graph
+            stgraph.readGraph(x)
 
-        # Separate out the observed part of the trajectory
-        obs_nodes, obs_edges, obs_nodesPresent, obs_edgesPresent = nodes[:sample_args.obs_length], edges[:sample_args.obs_length], nodesPresent[:sample_args.obs_length], edgesPresent[:sample_args.obs_length]
+            nodes, edges, nodesPresent, edgesPresent = stgraph.getSequence()
 
-        # Sample function
-        ret_nodes, ret_attn = sample(obs_nodes, obs_edges, obs_nodesPresent, obs_edgesPresent, sample_args, net, nodes, edges, nodesPresent)
+            # Convert to cuda variables
+            nodes = Variable(torch.from_numpy(nodes).float(), volatile=True).cuda()
+            edges = Variable(torch.from_numpy(edges).float(), volatile=True).cuda()
 
-        # Compute mean and final displacement error
-        total_error += get_mean_error(ret_nodes[sample_args.obs_length:].data, nodes[sample_args.obs_length:].data, nodesPresent[sample_args.obs_length-1], nodesPresent[sample_args.obs_length:],H,sample_args.test_dataset)
-        final_error += get_final_error(ret_nodes[sample_args.obs_length:].data, nodes[sample_args.obs_length:].data, nodesPresent[sample_args.obs_length-1], nodesPresent[sample_args.obs_length:],H,sample_args.test_dataset)
+            # Separate out the observed part of the trajectory
+            obs_nodes, obs_edges, obs_nodesPresent, obs_edgesPresent = nodes[:sample_args.obs_length], edges[:sample_args.obs_length], nodesPresent[:sample_args.obs_length], edgesPresent[:sample_args.obs_length]
 
-        end = time.time()
+            # Sample function
+            ret_nodes, ret_attn = sample(obs_nodes, obs_edges, obs_nodesPresent, obs_edgesPresent, sample_args, net, nodes, edges, nodesPresent)
 
-        print('Processed trajectory number : ', batch, 'out of', dataloader.num_batches, 'trajectories in time', end - start)
+            # Compute mean and final displacement error
+            total_error += get_mean_error(ret_nodes[sample_args.obs_length:].data, nodes[sample_args.obs_length:].data, nodesPresent[sample_args.obs_length-1], nodesPresent[sample_args.obs_length:],H,sample_args.sample_dataset)
+            final_error += get_final_error(ret_nodes[sample_args.obs_length:].data, nodes[sample_args.obs_length:].data, nodesPresent[sample_args.obs_length-1], nodesPresent[sample_args.obs_length:],H,sample_args.sample_dataset)
 
-        # Store results
-        results.append((nodes.data.cpu().numpy(), ret_nodes.data.cpu().numpy(), nodesPresent, sample_args.obs_length, ret_attn, frameIDs))
+            end = time.time()
 
-        # Reset the ST graph
-        stgraph.reset()
+            print('Processed trajectory number : ', batch, 'out of', dataloader.num_batches, 'trajectories in time', end - start)
 
-    print('Total mean error of the model is ', total_error / dataloader.num_batches)
-    print('Total final error of the model is ', final_error / dataloader.num_batches)
+            # Store results
+            results.append((nodes.data.cpu().numpy(), ret_nodes.data.cpu().numpy(), nodesPresent, sample_args.obs_length, ret_attn, frameIDs,total_error / dataloader.num_batches, final_error / dataloader.num_batches))
 
-    print('Saving results')
-    with open(os.path.join(save_directory, 'results.pkl'), 'wb') as f:
-        pickle.dump(results, f)
+            # Reset the ST graph
+            stgraph.reset()
+
+        print('Total mean error of the model is ', total_error / dataloader.num_batches)
+        print('Total final error of the model is ', final_error / dataloader.num_batches)
+
+        current_mean_error=total_error / dataloader.num_batches
+        current_final_error=final_error/dataloader.num_batches
+        if i==0:
+            min_current_mean_error=current_mean_error
+            min_current_final_error=current_final_error
+            min_index=i
+            print('Saving initial results on {}'.format(i))
+            with open(os.path.join(ouput_directory, 'results.pkl'), 'wb') as f:
+                pickle.dump(results, f)
+        else:
+            if current_mean_error<min_current_mean_error:
+                min_current_mean_error=current_mean_error
+                min_current_final_error = current_final_error
+                min_index=i
+                print('Found Smaller Error on {}, Saving results'.format(i))
+                print('Smaller current_mean_error"{} and current_final_error:{} and '.format(current_mean_error,current_final_error))
+                with open(os.path.join(ouput_directory, 'results.pkl'), 'wb') as f:
+                    pickle.dump(results, f)
+
+    print('Minimum Total Mean Error is {} and Minimum Final Mean Error is {} on {}th Sampling'.format(min_current_mean_error,min_current_final_error,min_index))
+
+
+
 
 
 def sample(nodes, edges, nodesPresent, edgesPresent, args, net, true_nodes, true_edges, true_nodesPresent):

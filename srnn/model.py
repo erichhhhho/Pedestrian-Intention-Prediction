@@ -257,8 +257,11 @@ class SRNN(nn.Module):
         # Get number of nodes
         numNodes = nodes.size()[1]
 
-        # Initialize output array
+        # Initialize output array(GPU)
         outputs = Variable(torch.zeros(self.seq_length*numNodes, self.output_size)).cuda()
+
+        # Initialize output array(CPU)
+        # outputs = Variable(torch.zeros(self.seq_length * numNodes, self.output_size))
 
         # Data structure to store attention weights
         attn_weights = [{} for _ in range(self.seq_length)]
@@ -279,19 +282,33 @@ class SRNN(nn.Module):
             nodes_current = nodes[framenum]
             edges_current = edges[framenum]
 
-            # Initialize temporary tensors
+            # Initialize temporary tensors(GPU)
             hidden_states_nodes_from_edges_temporal = Variable(torch.zeros(numNodes, self.human_human_edge_rnn_size).cuda())
             hidden_states_nodes_from_edges_spatial = Variable(torch.zeros(numNodes, self.human_human_edge_rnn_size).cuda())
+
+            # Initialize temporary tensors(CPU)
+            # hidden_states_nodes_from_edges_temporal = Variable(
+            #     torch.zeros(numNodes, self.human_human_edge_rnn_size))
+            # hidden_states_nodes_from_edges_spatial = Variable(
+            #     torch.zeros(numNodes, self.human_human_edge_rnn_size))
 
             # If there are any edges
             if len(edgeIDs) != 0:
 
                 # Temporal Edges
                 if len(temporal_edges) != 0:
-                    # Get the temporal edges
+                    # Get the temporal edges(GPU)
                     list_of_temporal_edges = Variable(torch.LongTensor([x[0]*numNodes + x[0] for x in edgeIDs if x[0] == x[1]]).cuda())
-                    # Get nodes associated with the temporal edges
+
+                    # Get the temporal edges(CPU)
+                    # list_of_temporal_edges = Variable(
+                    #     torch.LongTensor([x[0] * numNodes + x[0] for x in edgeIDs if x[0] == x[1]]))
+
+                    # Get nodes associated with the temporal edges(GPU)
                     list_of_temporal_nodes = torch.LongTensor([x[0] for x in edgeIDs if x[0] == x[1]]).cuda()
+
+                    # Get nodes associated with the temporal edges(CPU)
+                   # list_of_temporal_nodes = torch.LongTensor([x[0] for x in edgeIDs if x[0] == x[1]])
 
                     # Get the corresponding edge features
                     edges_temporal_start_end = torch.index_select(edges_current, 0, list_of_temporal_edges)
@@ -312,8 +329,13 @@ class SRNN(nn.Module):
 
                 # Spatial Edges
                 if len(spatial_edges) != 0:
-                    # Get the spatial edges
+                    # Get the spatial edges(GPU)
                     list_of_spatial_edges = Variable(torch.LongTensor([x[0]*numNodes + x[1] for x in edgeIDs if x[0] != x[1]]).cuda())
+
+                    # Get the spatial edges(CPU)
+                    # list_of_spatial_edges = Variable(
+                    #     torch.LongTensor([x[0] * numNodes + x[1] for x in edgeIDs if x[0] != x[1]]))
+
                     # Get nodes associated with the spatial edges
                     list_of_spatial_nodes = np.array([x[0] for x in edgeIDs if x[0] != x[1]])
 
@@ -339,7 +361,13 @@ class SRNN(nn.Module):
                         if len(l) == 0:
                             # If the node has no spatial edges, nothing to do
                             continue
+                        #(GPU)
                         l = torch.LongTensor(l).cuda()
+
+                        # (CPU)
+                        # l = torch.LongTensor(l)
+
+
                         # What are the other nodes with these edges?
                         node_others = [x[1] for x in edgeIDs if x[0] == node and x[0] != x[1]]                        
                         # If it has spatial edges
@@ -358,8 +386,11 @@ class SRNN(nn.Module):
             # If there are nodes in this frame
             if len(nodeIDs) != 0:
 
-                # Get list of nodes
+                # Get list of nodes(GPU)
                 list_of_nodes = Variable(torch.LongTensor(nodeIDs).cuda())
+
+                # Get list of nodes(CPU)
+                # list_of_nodes = Variable(torch.LongTensor(nodeIDs))
 
                 # Get their node features
                 nodes_current_selected = torch.index_select(nodes_current, 0, list_of_nodes)
@@ -379,8 +410,12 @@ class SRNN(nn.Module):
                 hidden_states_node_RNNs[list_of_nodes.data] = h_nodes
                 cell_states_node_RNNs[list_of_nodes.data] = c_nodes
 
-        # Reshape the outputs carefully
+        # Reshape the outputs carefully(GPU)
         outputs_return = Variable(torch.zeros(self.seq_length, numNodes, self.output_size).cuda())
+
+        # Reshape the outputs carefully(CPU)
+       # outputs_return = Variable(torch.zeros(self.seq_length, numNodes, self.output_size))
+
         for framenum in range(self.seq_length):
             for node in range(numNodes):
                 outputs_return[framenum, node, :] = outputs[framenum*numNodes + node, :]

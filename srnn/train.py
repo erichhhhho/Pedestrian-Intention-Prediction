@@ -21,8 +21,9 @@ from criterion import Gaussian2DLikelihood
 
 
 def main():
-    for index in range(2):
-        print('exluding dataset {} now'.format(index+3))
+   for index in range(5):
+
+        print('exluding dataset {} now'.format(index))
         parser = argparse.ArgumentParser()
 
         # RNN size
@@ -55,12 +56,12 @@ def main():
         parser.add_argument('--pred_length', type=int, default=12,
                             help='Predicted sequence length')
 
-        # Batch size
-        parser.add_argument('--batch_size', type=int, default=8,
+        # Batch size previous:8
+        parser.add_argument('--batch_size', type=int, default=24,
                             help='Batch size')
 
         # Number of epochs
-        parser.add_argument('--num_epochs', type=int, default=300,
+        parser.add_argument('--num_epochs', type=int, default=150,
                             help='number of epochs')
 
         # Gradient value at which it should be clipped
@@ -82,7 +83,7 @@ def main():
                             help='Dropout probability')
 
         # The leave out dataset
-        parser.add_argument('--leaveDataset', type=int, default=index+3,
+        parser.add_argument('--leaveDataset', type=int, default=index,
                             help='The dataset index to be left out in training')
 
         args = parser.parse_args()
@@ -104,7 +105,7 @@ def train(args):
     stgraph = ST_GRAPH(1, args.seq_length + 1)
 
     # Log directory
-    log_directory = '/home/hesl/PycharmProjects/srnn-pytorch/log/FixedPixel_300epochs/'
+    log_directory = '/home/hesl/PycharmProjects/srnn-pytorch/log/FixedPixel_150epochs_batchsize24_Pruned/'
     log_directory += str(args.leaveDataset)+'/'
     log_directory += 'log_attention'
 
@@ -113,7 +114,7 @@ def train(args):
     log_file = open(os.path.join(log_directory, 'val.txt'), 'w')
 
     # Save directory
-    save_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/FixedPixel_300epochs/'
+    save_directory = '/home/hesl/PycharmProjects/srnn-pytorch/save/FixedPixel_150epochs_batchsize24_Pruned/'
     save_directory += str(args.leaveDataset)+'/'
     save_directory += 'save_attention'
 
@@ -156,7 +157,7 @@ def train(args):
             for sequence in range(dataloader.batch_size):
                 # Construct the graph for the current sequence
                 stgraph.readGraph([x[sequence]])
-
+                #stgraph.printGraph()
                 nodes, edges, nodesPresent, edgesPresent = stgraph.getSequence()
 
                 # Convert to cuda variables
@@ -203,7 +204,8 @@ def train(args):
                                                                                     args.num_epochs * dataloader.num_batches,
                                                                                     epoch,
                                                                                     loss_batch, end - start))
-
+        print('num_batches:{}'.format(dataloader.num_batches))
+        print('valid_num_batches:{}'.format(dataloader.valid_num_batches))
         # Compute loss for the entire epoch
         loss_epoch /= dataloader.num_batches
         # Log it
@@ -264,7 +266,7 @@ def train(args):
         # Log it
         log_file_curve.write(str(loss_epoch)+'\n')
 
-        # Save the model after each epoch
+        # Save the model after each epochGUODIAN SHIPPING (HONGKONG) COMPANY LIMITED
         print('Saving model')
         torch.save({
             'epoch': epoch,

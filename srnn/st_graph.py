@@ -7,7 +7,7 @@ Date : 15th March 2017
 '''
 import numpy as np
 from helper import getVector, getMagnitudeAndDirection
-
+from numpy import linalg as LA
 
 class ST_GRAPH():
 
@@ -27,6 +27,11 @@ class ST_GRAPH():
     def reset(self):
         self.nodes = [{} for i in range(self.batch_size)]
         self.edges = [{} for i in range(self.batch_size)]
+
+    def distance(self,pos_in,pos_out):
+        pos_in=np.asarray(list(pos_in))
+        pos_out=np.asarray(list(pos_out))
+        return LA.norm(pos_in-pos_out)
 
     def readGraph(self, source_batch):
         '''
@@ -86,15 +91,17 @@ class ST_GRAPH():
                         pos_out = (frame[ped_out, 1], frame[ped_out, 2])
                         pos = (pos_in, pos_out)
                         edge_id = (pedID_in, pedID_out)
-                        # ASSUMPTION:
-                        # Assuming that pedIDs always are in increasing order in the input batch data
-                        if edge_id not in self.edges[sequence]:
-                            edge_type = 'H-H/S'
-                            edge_pos_list = {}
-                            edge_pos_list[framenum] = pos
-                            self.edges[sequence][edge_id] = ST_EDGE(edge_type, edge_id, edge_pos_list)
-                        else:
-                            self.edges[sequence][edge_id].addPosition(pos, framenum)
+                        dis=self.distance(pos_in,pos_out)
+                        if dis<0.05:
+                            # ASSUMPTION:
+                            # Assuming that pedIDs always are in increasing order in the input batch data
+                            if edge_id not in self.edges[sequence]:
+                                edge_type = 'H-H/S'
+                                edge_pos_list = {}
+                                edge_pos_list[framenum] = pos
+                                self.edges[sequence][edge_id] = ST_EDGE(edge_type, edge_id, edge_pos_list)
+                            else:
+                                self.edges[sequence][edge_id].addPosition(pos, framenum)
 
     def printGraph(self):
         '''
@@ -133,21 +140,27 @@ class ST_GRAPH():
         retNodePresent = [[] for c in range(self.seq_length)]
         retEdgePresent = [[] for c in range(self.seq_length)]
 
+        #index and pedID
         for i, ped in enumerate(nodes.keys()):
             list_of_nodes[ped] = i
+            #{pedID0:0,pedID1:1,...,}
             pos_list = nodes[ped].node_pos_list
+            #{pedID:pos,...,}
             for framenum in range(self.seq_length):
                 if framenum in pos_list:
+                    #append present Ped index in specific frame
                     retNodePresent[framenum].append(i)
                     retNodes[framenum, i, :] = list(pos_list[framenum])
 
         for ped, ped_other in edges.keys():
+            # ped index
             i, j = list_of_nodes[ped], list_of_nodes[ped_other]
             edge = edges[(ped, ped_other)]
 
             if ped == ped_other:
                 # Temporal edge
                 for framenum in range(self.seq_length):
+                    #got data
                     if framenum in edge.edge_pos_list:
                         retEdgePresent[framenum].append((i, j))
                         retEdges[framenum, i*(numNodes) + j, :] = getVector(edge.edge_pos_list[framenum])

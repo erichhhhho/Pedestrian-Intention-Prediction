@@ -17,18 +17,22 @@ def Gaussian2DLikelihood(outputs, targets, nodesPresent, pred_length):
     '''
     Computes the likelihood of predicted locations under a bivariate Gaussian distribution
     params:
-    outputs: Torch variable containing tensor of shape seq_length x numNodes x output_size
+    outputs: Torch variable containing tensor of shape seq_length x numNodes x output_size (e.g. 20*10*5)
     targets: Torch variable containing tensor of shape seq_length x numNodes x input_size
     nodesPresent : A list of lists, of size seq_length. Each list contains the nodeIDs that are present in the frame
     '''
 
     # Get the sequence length
+
     seq_length = outputs.size()[0]
     # Get the observed length
     obs_length = seq_length - pred_length
 
     # Extract mean, std devs and correlation
     mux, muy, sx, sy, corr = getCoef(outputs)
+    # print('outputs={},size={}'.format(outputs,outputs.size))
+    # print('input={},size={}'.format(targets, outputs.size))
+    #print('mux, muy, sx, sy, corr:{}{}{}{}'.format(mux, muy, sx, sy, corr))
 
     # Compute factors
     normx = targets[:, :, 0] - mux
@@ -48,7 +52,7 @@ def Gaussian2DLikelihood(outputs, targets, nodesPresent, pred_length):
     # Numerical stability
     epsilon = 1e-20
     result = -torch.log(torch.clamp(result, min=epsilon))
-
+    #print('result={}'.format(result))
     # Compute the loss across all frames and all nodes
     loss = 0
     counter = 0
